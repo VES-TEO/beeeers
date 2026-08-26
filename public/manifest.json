@@ -1,0 +1,9 @@
+{
+  "name": "BEEEEERS",
+  "short_name": "BEEEEERS",
+  "description": "La classifica delle birre del gruppo",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#221609",
+  "theme_color": "#221609"
+}

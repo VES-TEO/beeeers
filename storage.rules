@@ -1,0 +1,21 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // profiles/{uid}/..., entries/{uid}/..., gallery/{uid}/... — every photo
+    // lives under the uploader's own uid, so only they can write into it;
+    // any signed-in member of the group can view it.
+    match /{folder}/{uid}/{fileName} {
+      allow read: if signedIn();
+      allow write: if signedIn()
+        && request.auth.uid == uid
+        && request.resource.size < 8 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+  }
+}

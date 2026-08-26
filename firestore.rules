@@ -1,0 +1,60 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // users/{uid} — one profile per signed-in member, keyed by their auth uid.
+    match /users/{userId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.auth.uid == userId
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 40;
+      // Only the display name and avatar can be changed after creation —
+      // email/phone stay whatever Firebase Auth recorded at sign-up.
+      allow update: if signedIn()
+        && request.auth.uid == userId
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['name', 'photoURL']);
+      allow delete: if false;
+
+      // Web Push registration tokens for this user's devices. Only the Cloud
+      // Function (Admin SDK, bypasses rules) reads these; the client only
+      // ever writes its own.
+      match /fcmTokens/{token} {
+        allow read: if false;
+        allow write: if signedIn() && request.auth.uid == userId;
+      }
+    }
+
+    // entries/{entryId} — one logged beer. Immutable once created; only the
+    // person who logged it can delete it.
+    match /entries/{entryId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.profileId == request.auth.uid
+        && request.resource.data.ml is number && request.resource.data.ml > 0
+        && request.resource.data.points is number
+        && request.resource.data.warm is bool
+        && request.resource.data.doubled is bool
+        && request.resource.data.photoURL is string;
+      allow update: if false;
+      allow delete: if signedIn() && resource.data.profileId == request.auth.uid;
+    }
+
+    // gallery/{itemId} — Hall of Fame photos.
+    match /gallery/{itemId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.profileId == request.auth.uid
+        && request.resource.data.photoURL is string;
+      allow update: if false;
+      allow delete: if signedIn() && resource.data.profileId == request.auth.uid;
+    }
+  }
+}
