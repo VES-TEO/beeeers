@@ -1,4 +1,4 @@
-import { addDoc, collection, deleteDoc, doc, serverTimestamp, updateDoc } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, doc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
 import { deleteObject, ref } from "firebase/storage";
 import { db, storage } from "./firebase";
 import { uploadGalleryMedia, uploadPhoto } from "./uploadPhoto";
@@ -79,4 +79,18 @@ export async function deleteGalleryEntry(id: string, mediaURL: string | null | u
 export async function updateMyPhoto(profileId: string, photoFile: File) {
   const photoURL = await uploadPhoto(photoFile, "profiles", profileId, 240, 0.7);
   await updateDoc(doc(db, "users", profileId), { photoURL });
+}
+
+/** Sets (or overwrites) this profile's single emoji reaction on a diary entry. */
+export async function setReaction(entryId: string, profileId: string, emoji: string) {
+  await setDoc(doc(db, "entries", entryId, "reactions", profileId), {
+    entryId,
+    profileId,
+    emoji,
+    createdAt: serverTimestamp(),
+  });
+}
+
+export async function removeReaction(entryId: string, profileId: string) {
+  await deleteDoc(doc(db, "entries", entryId, "reactions", profileId));
 }

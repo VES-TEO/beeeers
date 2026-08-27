@@ -4,24 +4,82 @@ import { useState } from "react";
 import { Beer, Trash2 } from "lucide-react";
 import { PhotoCarousel } from "./PhotoCarousel";
 import { Avatar } from "./Avatar";
-import { fmtDate, fmtInt } from "@/lib/utils";
-import type { Entry, Profile } from "@/lib/types";
+import { fmtDate, fmtInt, onThisDayLastYear } from "@/lib/utils";
+import { REACTION_EMOJIS } from "@/lib/types";
+import type { Entry, Profile, Reaction } from "@/lib/types";
+
+function ReactionBar({
+  entryId,
+  reactions,
+  myProfileId,
+  onSetReaction,
+  onRemoveReaction,
+}: {
+  entryId: string;
+  reactions: Reaction[];
+  myProfileId: string;
+  onSetReaction: (entryId: string, emoji: string) => void;
+  onRemoveReaction: (entryId: string) => void;
+}) {
+  const mine = reactions.find((r) => r.profileId === myProfileId)?.emoji;
+  const counts: Record<string, number> = {};
+  reactions.forEach((r) => {
+    counts[r.emoji] = (counts[r.emoji] || 0) + 1;
+  });
+
+  return (
+    <div className="flex gap-1.5 mt-2">
+      {REACTION_EMOJIS.map((emoji) => {
+        const active = mine === emoji;
+        const count = counts[emoji] || 0;
+        return (
+          <button
+            key={emoji}
+            onClick={() => (active ? onRemoveReaction(entryId) : onSetReaction(entryId, emoji))}
+            className="flex items-center gap-1 rounded-full px-2 py-1 text-xs font-sans border"
+            style={{
+              background: active ? "rgba(255,201,60,0.16)" : "var(--bg-elev-2)",
+              borderColor: active ? "var(--amber-deep)" : "var(--border)",
+            }}
+          >
+            <span>{emoji}</span>
+            {count > 0 && <span className="text-[10.5px] text-text-dim font-semibold">{count}</span>}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 export function Feed({
   entries,
   profiles,
   myProfileId,
+  reactionsByEntry,
   onDelete,
+  onSetReaction,
+  onRemoveReaction,
 }: {
   entries: Entry[];
   profiles: Profile[];
   myProfileId: string;
+  reactionsByEntry: Record<string, Reaction[]>;
   onDelete: (entry: Entry) => void;
+  onSetReaction: (entryId: string, emoji: string) => void;
+  onRemoveReaction: (entryId: string) => void;
 }) {
   const [openPhotoIds, setOpenPhotoIds] = useState<Record<string, boolean>>({});
+  const lastYear = onThisDayLastYear(entries);
 
   return (
     <div>
+      {lastYear && (
+        <div className="mb-3.5 rounded-2xl px-3.5 py-3 border border-border" style={{ background: "linear-gradient(120deg, rgba(255,201,60,0.12) 0%, rgba(255,166,48,0.04) 100%)" }}>
+          <div className="text-[12.5px] font-sans text-text">
+            📅 <strong>Un anno fa oggi</strong> il gruppo ha bevuto {lastYear.count} {lastYear.count === 1 ? "birra" : "birre"} ({fmtInt(lastYear.ml)} ml, +{fmtInt(lastYear.points)} pt) 👀
+          </div>
+        </div>
+      )}
       <PhotoCarousel entries={entries} profiles={profiles} />
 
       {entries.length === 0 ? (
@@ -77,6 +135,13 @@ export function Feed({
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={e.photoURL} alt="prova" className="w-full rounded-[10px] mt-2 max-h-[260px] object-cover" />
                 )}
+                <ReactionBar
+                  entryId={e.id}
+                  reactions={reactionsByEntry[e.id] || []}
+                  myProfileId={myProfileId}
+                  onSetReaction={onSetReaction}
+                  onRemoveReaction={onRemoveReaction}
+                />
               </div>
             );
           })}

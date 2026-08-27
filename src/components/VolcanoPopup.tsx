@@ -3,10 +3,12 @@
 import { useEffect, useMemo } from "react";
 import { X } from "lucide-react";
 import { Avatar } from "./Avatar";
+import { playSiren } from "@/lib/sound";
 import type { Profile } from "@/lib/types";
 
 export function VolcanoPopup({ profile, onClose }: { profile: Profile | null | undefined; onClose: () => void }) {
   useEffect(() => {
+    playSiren();
     const t = setTimeout(onClose, 6000);
     return () => clearTimeout(t);
   }, [onClose]);

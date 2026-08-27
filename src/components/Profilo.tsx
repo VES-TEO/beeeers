@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import { Camera, LogOut } from "lucide-react";
 import { Avatar } from "./Avatar";
-import { currentYear, fmtDate, fmtInt } from "@/lib/utils";
+import { computeBadges, currentYear, fmtDate, fmtInt } from "@/lib/utils";
 import type { Entry, Profile } from "@/lib/types";
 
 export function Profilo({
@@ -25,6 +25,7 @@ export function Profilo({
   const totalBeers = entries.length;
   const thisYear = entries.filter((e) => e.createdAt && e.createdAt.toDate().getFullYear() === currentYear());
   const yearPoints = thisYear.reduce((s, e) => s + e.points, 0);
+  const badges = computeBadges(myProfile.id, entries);
 
   return (
     <div>
@@ -68,6 +69,25 @@ export function Profilo({
           <div className="font-baloo font-extrabold text-[19px] text-text">{fmtInt(totalPoints)}</div>
           <div className="text-[10.5px] text-text-dim mt-[3px] font-sans">Punti totali</div>
         </div>
+      </div>
+
+      <div className="text-xs font-bold text-text-dim uppercase tracking-wider mb-2">Traguardi</div>
+      <div className="grid grid-cols-3 gap-2 mb-[18px]">
+        {badges.map((b) => (
+          <div
+            key={b.label}
+            title={b.label}
+            className="flex flex-col items-center gap-1 rounded-xl px-1.5 py-2.5 text-center border"
+            style={{
+              background: b.achieved ? "rgba(255,201,60,0.1)" : "var(--bg-elev)",
+              borderColor: b.achieved ? "var(--amber-deep)" : "var(--border)",
+              opacity: b.achieved ? 1 : 0.4,
+            }}
+          >
+            <span className="text-xl leading-none">{b.emoji}</span>
+            <span className="text-[9px] text-text-dim font-sans leading-tight">{b.label.split(" — ")[0]}</span>
+          </div>
+        ))}
       </div>
 
       <div className="text-xs font-bold text-text-dim uppercase tracking-wider mb-2">Le tue ultime birre</div>

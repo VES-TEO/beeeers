@@ -3,10 +3,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/AuthProvider";
-import { useEntries, useGallery, useProfiles } from "@/hooks/useFirestoreData";
+import { useEntries, useGallery, useProfiles, useReactions } from "@/hooks/useFirestoreData";
 import { useNotifications } from "@/hooks/useNotifications";
-import { addGalleryEntry, deleteEntry, deleteGalleryEntry, logBeer, updateMyPhoto } from "@/lib/actions";
+import { addGalleryEntry, deleteEntry, deleteGalleryEntry, logBeer, removeReaction, setReaction, updateMyPhoto } from "@/lib/actions";
 import { signOutUser } from "@/lib/auth";
+import { playGlug } from "@/lib/sound";
 import { activeStreakLength, currentYear, dayStr, streakBeforeToday } from "@/lib/utils";
 import type { Entry, GalleryItem } from "@/lib/types";
 
@@ -29,6 +30,7 @@ export function App() {
   const profiles = useProfiles();
   const { entries, loading: entriesLoading } = useEntries();
   const gallery = useGallery();
+  const reactionsByEntry = useReactions();
   const { status: notifStatus, enableNotifications } = useNotifications(profile?.id ?? null);
 
   const [tab, setTab] = useState<Tab>("classifica");
@@ -170,6 +172,7 @@ export function App() {
     try {
       const { points, doubled } = await logBeer({ profileId: profile.id, ml, photoFile, warm, currentEntries: entries });
       setShowLog(false);
+      playGlug();
       const bonusMsg =
         doubled && warm
           ? "🔥♨️ Streak + birra calda: x4!"
@@ -191,6 +194,22 @@ export function App() {
       await deleteEntry(entry);
     } catch {
       showToast("Errore durante l'eliminazione");
+    }
+  };
+
+  const handleSetReaction = async (entryId: string, emoji: string) => {
+    try {
+      await setReaction(entryId, profile.id, emoji);
+    } catch {
+      showToast("Errore nel salvare la reazione");
+    }
+  };
+
+  const handleRemoveReaction = async (entryId: string) => {
+    try {
+      await removeReaction(entryId, profile.id);
+    } catch {
+      showToast("Errore nel rimuovere la reazione");
     }
   };
 
@@ -247,7 +266,15 @@ export function App() {
           />
         )}
         {tab === "feed" && (
-          <Feed entries={entries} profiles={profiles} myProfileId={profile.id} onDelete={handleDeleteEntry} />
+          <Feed
+            entries={entries}
+            profiles={profiles}
+            myProfileId={profile.id}
+            reactionsByEntry={reactionsByEntry}
+            onDelete={handleDeleteEntry}
+            onSetReaction={handleSetReaction}
+            onRemoveReaction={handleRemoveReaction}
+          />
         )}
         {tab === "hof" && (
           <HallOfFame

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 import { X } from "lucide-react";
+import { playFanfare } from "@/lib/sound";
 
 const CONFETTI_COLORS = ["var(--amber)", "var(--amber-deep)", "var(--coral)", "var(--mint)", "#7DD3FC", "#C084FC"];
 
@@ -9,6 +10,7 @@ const CONFETTI_COLORS = ["var(--amber)", "var(--amber-deep)", "var(--coral)", "v
  * the #1 spot in the leaderboard changes hands. */
 export function LeaderChangePopup({ leaderName, onClose }: { leaderName: string; onClose: () => void }) {
   useEffect(() => {
+    playFanfare();
     const t = setTimeout(onClose, 6000);
     return () => clearTimeout(t);
   }, [onClose]);

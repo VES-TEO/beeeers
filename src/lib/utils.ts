@@ -72,6 +72,86 @@ export function activeStreakLength(
   return count;
 }
 
+const TOP_RANK_TITLES = [
+  "Il Barone della Birra",
+  "Sua Maestà del Boccale",
+  "Il Doge del Luppolo",
+  "Campione Indiscusso",
+  "Il Patriarca della Schiuma",
+  "Sua Eccellenza Alcolica",
+];
+const LAST_RANK_TITLES = [
+  "Lo Scoiattolo Lento",
+  "Il Sorseggiatore Timido",
+  "L'Apprendista della Botte",
+  "Il Cauto",
+  "Ultimo per Scelta (forse)",
+  "Il Filosofo del Bicchiere Mezzo Pieno",
+];
+
+/** Same nickname all day, rotates daily — cheap and deterministic without any storage. */
+function dailyPick<T>(list: readonly T[]): T {
+  const dayOfYear = Math.floor(
+    (Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86_400_000
+  );
+  return list[dayOfYear % list.length];
+}
+
+export function topRankTitle(): string {
+  return dailyPick(TOP_RANK_TITLES);
+}
+
+export function lastRankTitle(): string {
+  return dailyPick(LAST_RANK_TITLES);
+}
+
+/** Group-wide stats for this exact calendar day one year ago, or null if nobody drank that day. */
+export function onThisDayLastYear(
+  entries: { ml: number; points: number; createdAt: Timestamp | null }[]
+): { count: number; ml: number; points: number } | null {
+  const now = new Date();
+  const target = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+  const targetStr = dayStr(target);
+  const matches = entries.filter((e) => e.createdAt && dayStr(tsToDate(e.createdAt)) === targetStr);
+  if (matches.length === 0) return null;
+  return {
+    count: matches.length,
+    ml: matches.reduce((s, e) => s + e.ml, 0),
+    points: matches.reduce((s, e) => s + e.points, 0),
+  };
+}
+
+export interface Badge {
+  emoji: string;
+  label: string;
+  achieved: boolean;
+}
+
+/** Milestone badges computed purely client-side from this profile's own entries — no extra reads or writes. */
+export function computeBadges(
+  profileId: string,
+  entries: { profileId: string; ml: number; warm: boolean; createdAt: Timestamp | null }[]
+): Badge[] {
+  const mine = entries.filter((e) => e.profileId === profileId);
+  const count = mine.length;
+  const totalMl = mine.reduce((s, e) => s + e.ml, 0);
+  const warmCount = mine.filter((e) => e.warm).length;
+  const streak = activeStreakLength(profileId, entries);
+  const nightOwl = mine.some((e) => e.createdAt && tsToDate(e.createdAt).getHours() < 5);
+
+  return [
+    { emoji: "🍺", label: "Debuttante — 10 birre", achieved: count >= 10 },
+    { emoji: "🍻", label: "Habitué — 50 birre", achieved: count >= 50 },
+    { emoji: "🏆", label: "Leggenda — 100 birre", achieved: count >= 100 },
+    { emoji: "💧", label: "Idratato — 10 L totali", achieved: totalMl >= 10_000 },
+    { emoji: "🌊", label: "Cisterna — 50 L totali", achieved: totalMl >= 50_000 },
+    { emoji: "🔥", label: "In fiamme — streak di 3+ giorni", achieved: streak >= 3 },
+    { emoji: "🔥🔥", label: "Piromane — streak di 7+ giorni", achieved: streak >= 7 },
+    { emoji: "🌋", label: "Vulcanico — 5 birre calde", achieved: warmCount >= 5 },
+    { emoji: "🦉", label: "Nottambulo — birra dopo mezzanotte", achieved: nightOwl },
+  ];
+}
+
 export function avatarColor(id: string) {
   let h = 0;
   for (let i = 0; i < id.length; i++) h = id.charCodeAt(i) + ((h << 5) - h);

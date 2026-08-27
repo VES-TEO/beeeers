@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { collection, onSnapshot, orderBy, query, limit } from "firebase/firestore";
+import { collection, collectionGroup, onSnapshot, orderBy, query, limit } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import type { Entry, GalleryItem, Profile } from "@/lib/types";
+import type { Entry, GalleryItem, Profile, Reaction } from "@/lib/types";
 
 export function useProfiles() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -40,4 +40,23 @@ export function useGallery() {
     });
   }, []);
   return gallery;
+}
+
+/** Every diary-entry reaction across the whole group, grouped by entryId — one
+ * collectionGroup listener instead of one listener per rendered entry. */
+export function useReactions() {
+  const [byEntry, setByEntry] = useState<Record<string, Reaction[]>>({});
+  useEffect(() => {
+    const q = query(collectionGroup(db, "reactions"), limit(5000));
+    return onSnapshot(q, (snap) => {
+      const grouped: Record<string, Reaction[]> = {};
+      snap.docs.forEach((d) => {
+        const r = d.data() as Reaction;
+        if (!grouped[r.entryId]) grouped[r.entryId] = [];
+        grouped[r.entryId].push(r);
+      });
+      setByEntry(grouped);
+    });
+  }, []);
+  return byEntry;
 }

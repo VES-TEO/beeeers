@@ -1,6 +1,6 @@
 import { Trophy } from "lucide-react";
 import { Avatar } from "./Avatar";
-import { fmtInt } from "@/lib/utils";
+import { fmtInt, lastRankTitle, topRankTitle } from "@/lib/utils";
 import type { Profile } from "@/lib/types";
 
 export interface LeaderboardRow {
@@ -28,6 +28,18 @@ export function Classifica({
   streakMap: Record<string, number>;
   warmMap: Record<string, boolean>;
 }) {
+  const participants = leaderboard.filter((r) => r.count > 0).length;
+  let lastParticipantIndex = -1;
+  for (let i = leaderboard.length - 1; i >= 0; i--) {
+    if (leaderboard[i].count > 0) {
+      lastParticipantIndex = i;
+      break;
+    }
+  }
+  // Only crown a "last place" when there's actually more than one drinker in
+  // the mix — otherwise the lone participant would get mocked for existing.
+  const showLastTitle = participants >= 2;
+
   return (
     <div>
       <div className="flex gap-1.5 mb-3">
@@ -99,6 +111,12 @@ export function Classifica({
                   <div className="text-[11.5px] text-text-dim mt-0.5">
                     {row.count} {row.count === 1 ? "birra" : "birre"}
                   </div>
+                  {i === 0 && row.points > 0 && (
+                    <div className="text-[10px] text-amber-deep font-sans italic mt-0.5">👑 {topRankTitle()}</div>
+                  )}
+                  {showLastTitle && i === lastParticipantIndex && (
+                    <div className="text-[10px] text-text-dim font-sans italic mt-0.5">🐌 {lastRankTitle()}</div>
+                  )}
                 </div>
                 <div className="font-baloo font-extrabold text-lg text-amber">
                   {fmtInt(row.points)}

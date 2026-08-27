@@ -20,6 +20,14 @@ export interface Entry {
   createdAt: Timestamp;
 }
 
+export interface Reaction {
+  entryId: string;
+  profileId: string;
+  emoji: string;
+}
+
+export const REACTION_EMOJIS = ["🔥", "😂", "🤢", "👏"] as const;
+
 export interface GalleryItem {
   id: string;
   profileId: string;
