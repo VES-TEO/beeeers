@@ -1,8 +1,9 @@
 "use client";
 
 // Tiny synthesized sound effects via the Web Audio API — no audio assets to
-// upload/host, just oscillator envelopes. Every call is wrapped so a blocked
-// AudioContext (autoplay policy, unsupported browser) never breaks the UI.
+// upload/host, just oscillator envelopes and filtered noise bursts. Every
+// call is wrapped so a blocked AudioContext (autoplay policy, unsupported
+// browser) never breaks the UI.
 
 let ctx: AudioContext | null = null;
 function getCtx(): AudioContext | null {
@@ -28,23 +29,45 @@ function tone(freq: number, start: number, duration: number, type: OscillatorTyp
   osc.stop(audioCtx.currentTime + start + duration + 0.05);
 }
 
-/** A short burst of filtered white noise — the "fizz" after a cap comes off. */
-function fizz(start: number, duration: number, gain: number, audioCtx: AudioContext) {
-  const sampleCount = Math.floor(audioCtx.sampleRate * duration);
+/**
+ * A burst of white noise shaped by a decay envelope, optionally run through a
+ * filter. This is the actual building block for "pop"-type sounds — a real
+ * cap/cork pop is acoustically an impulse exciting a resonant air column
+ * (the bottle neck), which is exactly what noise-through-a-bandpass models.
+ */
+function noiseBurst(
+  audioCtx: AudioContext,
+  opts: {
+    start: number;
+    duration: number;
+    gain: number;
+    filterType?: BiquadFilterType;
+    filterFreq?: number;
+    filterQ?: number;
+    curve?: number; // higher = faster initial decay
+  }
+) {
+  const { start, duration, gain, filterType, filterFreq, filterQ, curve = 2 } = opts;
+  const sampleCount = Math.max(1, Math.floor(audioCtx.sampleRate * duration));
   const buffer = audioCtx.createBuffer(1, sampleCount, audioCtx.sampleRate);
   const data = buffer.getChannelData(0);
   for (let i = 0; i < sampleCount; i++) {
-    data[i] = (Math.random() * 2 - 1) * (1 - i / sampleCount) ** 2;
+    data[i] = (Math.random() * 2 - 1) * (1 - i / sampleCount) ** curve;
   }
   const noise = audioCtx.createBufferSource();
   noise.buffer = buffer;
-  const filter = audioCtx.createBiquadFilter();
-  filter.type = "highpass";
-  filter.frequency.value = 3500;
   const g = audioCtx.createGain();
-  g.gain.setValueAtTime(gain, audioCtx.currentTime + start);
-  noise.connect(filter);
-  filter.connect(g);
+  g.gain.value = gain;
+  let node: AudioNode = noise;
+  if (filterType) {
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = filterType;
+    filter.frequency.value = filterFreq ?? 1000;
+    if (filterQ) filter.Q.value = filterQ;
+    node.connect(filter);
+    node = filter;
+  }
+  node.connect(g);
   g.connect(audioCtx.destination);
   noise.start(audioCtx.currentTime + start);
 }
@@ -58,23 +81,34 @@ function safely(fn: (audioCtx: AudioContext) => void) {
   }
 }
 
-/** A bottle cap popping open (sharp pitch-dropping "pok" + a fizzy tail) —
- * played when a beer is successfully logged. */
+/**
+ * A cold one getting opened: a sharp broadband "crack" (the cap releasing),
+ * immediately followed by the neck's resonant "thock" (bandpass-filtered
+ * noise, like tapping a bottle), then a longer, quieter carbonation fizz.
+ * Played when a beer is successfully logged.
+ */
 export function playBottlePop() {
   safely((audioCtx) => {
-    const osc = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-    osc.type = "triangle";
-    osc.frequency.setValueAtTime(1900, audioCtx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(140, audioCtx.currentTime + 0.055);
-    g.gain.setValueAtTime(0.4, audioCtx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.09);
-    osc.connect(g);
-    g.connect(audioCtx.destination);
-    osc.start();
-    osc.stop(audioCtx.currentTime + 0.1);
+    // 1) the crack — a few milliseconds of unfiltered noise
+    noiseBurst(audioCtx, { start: 0, duration: 0.006, gain: 0.5, curve: 1.2 });
 
-    fizz(0.02, 0.35, 0.05, audioCtx);
+    // 2) the resonant pop — randomized a bit so it doesn't sound identical every time
+    const resonantFreq = 190 + Math.random() * 70;
+    noiseBurst(audioCtx, {
+      start: 0.004,
+      duration: 0.05,
+      gain: 0.55,
+      filterType: "bandpass",
+      filterFreq: resonantFreq,
+      filterQ: 7,
+      curve: 2.5,
+    });
+    // a faint low thump under the pop, for body
+    tone(resonantFreq * 0.7, 0.004, 0.07, "sine", 0.12, audioCtx);
+
+    // 3) the fizz tail — escaping carbonation
+    noiseBurst(audioCtx, { start: 0.03, duration: 0.5, gain: 0.045, filterType: "highpass", filterFreq: 4000, curve: 2 });
+    noiseBurst(audioCtx, { start: 0.05, duration: 0.35, gain: 0.03, filterType: "bandpass", filterFreq: 6000, filterQ: 0.6, curve: 1.5 });
   });
 }
 
