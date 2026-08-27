@@ -7,7 +7,7 @@ import { useEntries, useGallery, useProfiles, useReactions } from "@/hooks/useFi
 import { useNotifications } from "@/hooks/useNotifications";
 import { addGalleryEntry, deleteEntry, deleteGalleryEntry, logBeer, removeReaction, setReaction, updateMyPhoto } from "@/lib/actions";
 import { signOutUser } from "@/lib/auth";
-import { playGlug } from "@/lib/sound";
+import { playBottlePop } from "@/lib/sound";
 import { activeStreakLength, currentYear, dayStr, streakBeforeToday } from "@/lib/utils";
 import type { Entry, GalleryItem } from "@/lib/types";
 
@@ -172,7 +172,7 @@ export function App() {
     try {
       const { points, doubled } = await logBeer({ profileId: profile.id, ml, photoFile, warm, currentEntries: entries });
       setShowLog(false);
-      playGlug();
+      playBottlePop();
       const bonusMsg =
         doubled && warm
           ? "🔥♨️ Streak + birra calda: x4!"

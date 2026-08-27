@@ -72,22 +72,27 @@ export function Profilo({
       </div>
 
       <div className="text-xs font-bold text-text-dim uppercase tracking-wider mb-2">Traguardi</div>
-      <div className="grid grid-cols-3 gap-2 mb-[18px]">
-        {badges.map((b) => (
-          <div
-            key={b.label}
-            title={b.label}
-            className="flex flex-col items-center gap-1 rounded-xl px-1.5 py-2.5 text-center border"
-            style={{
-              background: b.achieved ? "rgba(255,201,60,0.1)" : "var(--bg-elev)",
-              borderColor: b.achieved ? "var(--amber-deep)" : "var(--border)",
-              opacity: b.achieved ? 1 : 0.4,
-            }}
-          >
-            <span className="text-xl leading-none">{b.emoji}</span>
-            <span className="text-[9px] text-text-dim font-sans leading-tight">{b.label.split(" — ")[0]}</span>
-          </div>
-        ))}
+      <div className="grid grid-cols-2 gap-2 mb-[18px]">
+        {badges.map((b) => {
+          const [name, requirement] = b.label.split(" — ");
+          return (
+            <div
+              key={b.label}
+              className="flex items-center gap-2.5 rounded-xl px-2.5 py-2.5 border"
+              style={{
+                background: b.achieved ? "rgba(255,201,60,0.1)" : "var(--bg-elev)",
+                borderColor: b.achieved ? "var(--amber-deep)" : "var(--border)",
+                opacity: b.achieved ? 1 : 0.45,
+              }}
+            >
+              <span className="text-xl leading-none flex-shrink-0">{b.emoji}</span>
+              <div className="min-w-0">
+                <div className="text-[11.5px] font-bold text-text font-sans leading-tight truncate">{name}</div>
+                <div className="text-[10px] text-text-dim font-sans leading-tight">{requirement}</div>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       <div className="text-xs font-bold text-text-dim uppercase tracking-wider mb-2">Le tue ultime birre</div>

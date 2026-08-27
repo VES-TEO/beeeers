@@ -28,6 +28,27 @@ function tone(freq: number, start: number, duration: number, type: OscillatorTyp
   osc.stop(audioCtx.currentTime + start + duration + 0.05);
 }
 
+/** A short burst of filtered white noise — the "fizz" after a cap comes off. */
+function fizz(start: number, duration: number, gain: number, audioCtx: AudioContext) {
+  const sampleCount = Math.floor(audioCtx.sampleRate * duration);
+  const buffer = audioCtx.createBuffer(1, sampleCount, audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < sampleCount; i++) {
+    data[i] = (Math.random() * 2 - 1) * (1 - i / sampleCount) ** 2;
+  }
+  const noise = audioCtx.createBufferSource();
+  noise.buffer = buffer;
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = "highpass";
+  filter.frequency.value = 3500;
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(gain, audioCtx.currentTime + start);
+  noise.connect(filter);
+  filter.connect(g);
+  g.connect(audioCtx.destination);
+  noise.start(audioCtx.currentTime + start);
+}
+
 function safely(fn: (audioCtx: AudioContext) => void) {
   try {
     const audioCtx = getCtx();
@@ -37,12 +58,23 @@ function safely(fn: (audioCtx: AudioContext) => void) {
   }
 }
 
-/** Short descending "glug" — played when a beer is successfully logged. */
-export function playGlug() {
+/** A bottle cap popping open (sharp pitch-dropping "pok" + a fizzy tail) —
+ * played when a beer is successfully logged. */
+export function playBottlePop() {
   safely((audioCtx) => {
-    tone(520, 0, 0.12, "sine", 0.18, audioCtx);
-    tone(390, 0.09, 0.14, "sine", 0.16, audioCtx);
-    tone(300, 0.18, 0.16, "sine", 0.14, audioCtx);
+    const osc = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(1900, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(140, audioCtx.currentTime + 0.055);
+    g.gain.setValueAtTime(0.4, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.09);
+    osc.connect(g);
+    g.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.1);
+
+    fizz(0.02, 0.35, 0.05, audioCtx);
   });
 }
 
