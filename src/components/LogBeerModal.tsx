@@ -120,7 +120,7 @@ export function LogBeerModal({
             </div>
           )}
         </button>
-        <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handlePhoto} />
+        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhoto} />
 
         <button
           disabled={!canSave}

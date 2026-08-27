@@ -19,6 +19,7 @@ import { HallOfFame } from "./HallOfFame";
 import { Profilo } from "./Profilo";
 import { LogBeerModal } from "./LogBeerModal";
 import { VolcanoPopup } from "./VolcanoPopup";
+import { LeaderChangePopup } from "./LeaderChangePopup";
 import { Toast } from "./Toast";
 
 export type Tab = "classifica" | "feed" | "hof" | "profilo";
@@ -36,6 +37,7 @@ export function App() {
   const [toast, setToast] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [volcanoEntry, setVolcanoEntry] = useState<Entry | null>(null);
+  const [newLeaderName, setNewLeaderName] = useState<string | null>(null);
 
   // Tracks warm-beer entries we've already surfaced a volcano popup for, so a
   // realtime update doesn't repeat one. Seeded on first load (no popups for
@@ -59,6 +61,44 @@ export function App() {
     }
     warmEntries.forEach((e) => seen.add(e.id));
   }, [entries, entriesLoading, profile]);
+
+  // #1 of the *current* year's leaderboard, independent of whichever year the
+  // viewer currently has selected in the year filter.
+  const currentYearTopId = useMemo(() => {
+    const cy = currentYear();
+    const points: Record<string, number> = {};
+    entries.forEach((e) => {
+      if (e.createdAt && e.createdAt.toDate().getFullYear() === cy) {
+        points[e.profileId] = (points[e.profileId] || 0) + e.points;
+      }
+    });
+    let topId: string | null = null;
+    let topPoints = 0;
+    Object.entries(points).forEach(([id, pts]) => {
+      if (pts > topPoints) {
+        topPoints = pts;
+        topId = id;
+      }
+    });
+    return topId;
+  }, [entries]);
+
+  // Fires the confetti + F1 car celebration for everyone watching whenever the
+  // #1 spot changes hands — seeded (no popup) on first load so existing
+  // standings don't "announce" themselves the moment the app opens.
+  const prevLeaderIdRef = useRef<string | null | undefined>(undefined);
+  useEffect(() => {
+    if (entriesLoading || !profile) return;
+    if (prevLeaderIdRef.current === undefined) {
+      prevLeaderIdRef.current = currentYearTopId;
+      return;
+    }
+    if (currentYearTopId && currentYearTopId !== prevLeaderIdRef.current) {
+      const leader = profiles.find((p) => p.id === currentYearTopId);
+      if (leader) setNewLeaderName(leader.name);
+    }
+    prevLeaderIdRef.current = currentYearTopId;
+  }, [currentYearTopId, entriesLoading, profile, profiles]);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -247,6 +287,7 @@ export function App() {
           onClose={() => setVolcanoEntry(null)}
         />
       )}
+      {newLeaderName && <LeaderChangePopup leaderName={newLeaderName} onClose={() => setNewLeaderName(null)} />}
     </div>
   );
 }
