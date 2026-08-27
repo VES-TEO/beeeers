@@ -21,6 +21,7 @@ export function Profilo({
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const totalPoints = entries.reduce((s, e) => s + e.points, 0);
+  const totalMl = entries.reduce((s, e) => s + e.ml, 0);
   const totalBeers = entries.length;
   const thisYear = entries.filter((e) => e.createdAt && e.createdAt.toDate().getFullYear() === currentYear());
   const yearPoints = thisYear.reduce((s, e) => s + e.points, 0);
@@ -50,7 +51,7 @@ export function Profilo({
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-2 mb-[18px]">
+      <div className="grid grid-cols-2 gap-2 mb-[18px]">
         <div className="bg-bg-elev border border-border rounded-xl px-1.5 py-3 text-center">
           <div className="font-baloo font-extrabold text-[19px] text-text">{fmtInt(yearPoints)}</div>
           <div className="text-[10.5px] text-text-dim mt-[3px] font-sans">Punti {currentYear()}</div>
@@ -58,6 +59,10 @@ export function Profilo({
         <div className="bg-bg-elev border border-border rounded-xl px-1.5 py-3 text-center">
           <div className="font-baloo font-extrabold text-[19px] text-text">{totalBeers}</div>
           <div className="text-[10.5px] text-text-dim mt-[3px] font-sans">Birre totali</div>
+        </div>
+        <div className="bg-bg-elev border border-border rounded-xl px-1.5 py-3 text-center">
+          <div className="font-baloo font-extrabold text-[19px] text-text">{fmtInt(totalMl)}</div>
+          <div className="text-[10.5px] text-text-dim mt-[3px] font-sans">ml totali bevuti</div>
         </div>
         <div className="bg-bg-elev border border-border rounded-xl px-1.5 py-3 text-center">
           <div className="font-baloo font-extrabold text-[19px] text-text">{fmtInt(totalPoints)}</div>
