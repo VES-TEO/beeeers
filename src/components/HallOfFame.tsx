@@ -1,11 +1,30 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, Plus, Skull, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Play, Plus, Skull, Trash2 } from "lucide-react";
 import { Avatar } from "./Avatar";
 import { AddMemoryModal } from "./AddMemoryModal";
 import { fmtDate } from "@/lib/utils";
 import type { GalleryItem, Profile } from "@/lib/types";
+
+/** Renders a gallery item's photo or video, filling its container. */
+function GalleryMedia({ item, alt, controls }: { item: GalleryItem; alt: string; controls: boolean }) {
+  if (item.mediaType === "video") {
+    return (
+      // eslint-disable-next-line jsx-a11y/media-has-caption
+      <video
+        src={item.mediaURL}
+        className="w-full h-full object-cover"
+        muted
+        playsInline
+        controls={controls}
+        preload="metadata"
+      />
+    );
+  }
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={item.mediaURL} alt={alt} className="w-full h-full object-cover" />;
+}
 
 export function HallOfFame({
   gallery,
@@ -18,7 +37,7 @@ export function HallOfFame({
   gallery: GalleryItem[];
   profiles: Profile[];
   myProfileId: string;
-  onAdd: (payload: { caption: string; photoFile: File }) => Promise<void>;
+  onAdd: (payload: { caption: string; mediaFile: File }) => Promise<void>;
   onDelete: (item: GalleryItem) => void;
   busy: boolean;
 }) {
@@ -75,10 +94,9 @@ export function HallOfFame({
       ) : (
         <>
           <div className="relative w-full h-[320px] rounded-[18px] overflow-hidden border border-border bg-bg-elev">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={items[spotIndex].photoURL} alt={spotProfile(items[spotIndex])?.name || "?"} className="w-full h-full object-cover" />
+            <GalleryMedia item={items[spotIndex]} alt={spotProfile(items[spotIndex])?.name || "?"} controls />
             <div
-              className="absolute bottom-0 left-0 right-0 px-3.5 pb-3.5 pt-10"
+              className="absolute bottom-0 left-0 right-0 px-3.5 pb-3.5 pt-10 pointer-events-none"
               style={{ background: "linear-gradient(0deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.1) 70%, rgba(0,0,0,0) 100%)" }}
             >
               <div className="flex items-center gap-2">
@@ -125,8 +143,12 @@ export function HallOfFame({
           <div className="grid grid-cols-3 gap-2">
             {items.map((it) => (
               <div key={it.id} className="relative aspect-square rounded-[10px] overflow-hidden border border-border">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={it.photoURL} alt={spotProfile(it)?.name || "?"} className="w-full h-full object-cover" />
+                <GalleryMedia item={it} alt={spotProfile(it)?.name || "?"} controls={false} />
+                {it.mediaType === "video" && (
+                  <div className="absolute top-1 left-1 bg-black/55 rounded-full w-5 h-5 flex items-center justify-center pointer-events-none">
+                    <Play size={10} color="#fff" fill="#fff" />
+                  </div>
+                )}
                 <div
                   className="absolute bottom-0 left-0 right-0 px-1.5 pb-1 pt-3 flex justify-between items-center"
                   style={{ background: "linear-gradient(0deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0) 100%)" }}

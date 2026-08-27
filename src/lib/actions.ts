@@ -1,7 +1,7 @@
 import { addDoc, collection, deleteDoc, doc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { deleteObject, ref } from "firebase/storage";
 import { db, storage } from "./firebase";
-import { uploadPhoto } from "./uploadPhoto";
+import { uploadGalleryMedia, uploadPhoto } from "./uploadPhoto";
 import { streakBeforeToday } from "./utils";
 import type { Entry } from "./types";
 
@@ -55,24 +55,25 @@ export async function deleteEntry(entry: Entry) {
 export async function addGalleryEntry({
   profileId,
   caption,
-  photoFile,
+  mediaFile,
 }: {
   profileId: string;
   caption: string;
-  photoFile: File;
+  mediaFile: File;
 }) {
-  const photoURL = await uploadPhoto(photoFile, "gallery", profileId, 640, 0.6);
+  const { url, mediaType } = await uploadGalleryMedia(mediaFile, profileId);
   await addDoc(collection(db, "gallery"), {
     profileId,
     caption: caption || "",
-    photoURL,
+    mediaURL: url,
+    mediaType,
     createdAt: serverTimestamp(),
   });
 }
 
-export async function deleteGalleryEntry(id: string, photoURL: string | null | undefined) {
+export async function deleteGalleryEntry(id: string, mediaURL: string | null | undefined) {
   await deleteDoc(doc(db, "gallery", id));
-  await deletePhotoQuiet(photoURL);
+  await deletePhotoQuiet(mediaURL);
 }
 
 export async function updateMyPhoto(profileId: string, photoFile: File) {

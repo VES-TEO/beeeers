@@ -26,7 +26,7 @@ Bottone rotondo in basso al centro (il boccale). Poi:
 
 - **🏆 Classifica** — chi ha bevuto di più, filtrabile per anno. Il primo posto cambia in tempo reale per tutti (con tanto di coriandoli e macchina da corsa quando cambia il leader).
 - **📖 Diario** — tutte le birre del gruppo con foto, in ordine cronologico.
-- **💀 Hall of Fame** — galleria di foto imbarazzanti, separata dalle birre: aggiungi un "ricordo" con foto e didascalia quando qualcuno si merita di finirci.
+- **💀 Hall of Fame** — galleria di foto **o video** imbarazzanti, separata dalle birre: aggiungi un "ricordo" con foto/video e didascalia quando qualcuno si merita di finirci (video fino a ~45 MB).
 - **👤 Profilo** — le tue statistiche, cambia foto, esci dal profilo.
 
 ## 5. Birra calda 🌋 e notifiche push

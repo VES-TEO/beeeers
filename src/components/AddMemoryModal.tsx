@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Camera, X } from "lucide-react";
+import { Camera, Video, X } from "lucide-react";
 
 export function AddMemoryModal({
   onClose,
@@ -9,22 +9,24 @@ export function AddMemoryModal({
   busy,
 }: {
   onClose: () => void;
-  onSave: (payload: { caption: string; photoFile: File }) => void;
+  onSave: (payload: { caption: string; mediaFile: File }) => void;
   busy: boolean;
 }) {
   const [caption, setCaption] = useState("");
-  const [photoFile, setPhotoFile] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
+  const [mediaPreview, setMediaPreview] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const handlePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const isVideo = mediaFile?.type.startsWith("video/") ?? false;
+
+  const handleMedia = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
-    setPhotoFile(f);
-    setPhotoPreview(URL.createObjectURL(f));
+    setMediaFile(f);
+    setMediaPreview(URL.createObjectURL(f));
   };
 
-  const canSave = !!photoFile && !busy;
+  const canSave = !!mediaFile && !busy;
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-end justify-center z-50" onClick={onClose}>
@@ -39,22 +41,33 @@ export function AddMemoryModal({
           </button>
         </div>
 
-        <label className="block text-[11.5px] text-text-dim uppercase tracking-wider mb-1.5 mt-3.5 font-bold font-sans">La foto della vergogna</label>
+        <label className="block text-[11.5px] text-text-dim uppercase tracking-wider mb-1.5 mt-3.5 font-bold font-sans">
+          La foto (o il video) della vergogna
+        </label>
         <button
           onClick={() => fileRef.current?.click()}
           className="w-full h-[140px] rounded-xl border-2 border-dashed border-border bg-bg-elev-2 flex items-center justify-center overflow-hidden box-border"
         >
-          {photoPreview ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={photoPreview} alt="anteprima" className="w-full h-full object-cover rounded-xl" />
+          {mediaPreview ? (
+            isVideo ? (
+              // eslint-disable-next-line jsx-a11y/media-has-caption
+              <video src={mediaPreview} className="w-full h-full object-cover rounded-xl" muted playsInline controls />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={mediaPreview} alt="anteprima" className="w-full h-full object-cover rounded-xl" />
+            )
           ) : (
             <div className="flex flex-col items-center gap-1.5 text-amber">
-              <Camera size={22} />
-              <span className="text-[12.5px] font-sans">Scatta o carica una foto</span>
+              <div className="flex gap-2">
+                <Camera size={22} />
+                <Video size={22} />
+              </div>
+              <span className="text-[12.5px] font-sans">Scatta/carica una foto o un video</span>
             </div>
           )}
         </button>
-        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhoto} />
+        <input ref={fileRef} type="file" accept="image/*,video/*" className="hidden" onChange={handleMedia} />
+        <p className="text-[11px] text-text-dim mt-1.5 font-sans">I video sono limitati a 45 MB circa.</p>
 
         <label className="block text-[11.5px] text-text-dim uppercase tracking-wider mb-1.5 mt-3.5 font-bold font-sans">
           Racconta cos&apos;è successo (opzionale)
@@ -69,7 +82,7 @@ export function AddMemoryModal({
 
         <button
           disabled={!canSave}
-          onClick={() => photoFile && onSave({ caption, photoFile })}
+          onClick={() => mediaFile && onSave({ caption, mediaFile })}
           className="w-full mt-5 rounded-xl py-[13px] font-baloo text-[15.5px] font-bold text-[#12100B] disabled:opacity-50"
           style={{ background: "linear-gradient(135deg, var(--amber) 0%, var(--amber-deep) 100%)" }}
         >

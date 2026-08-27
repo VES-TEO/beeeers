@@ -194,13 +194,17 @@ export function App() {
     }
   };
 
-  const handleAddGallery = async ({ caption, photoFile }: { caption: string; photoFile: File }) => {
+  const handleAddGallery = async ({ caption, mediaFile }: { caption: string; mediaFile: File }) => {
     setBusy(true);
     try {
-      await addGalleryEntry({ profileId: profile.id, caption, photoFile });
+      await addGalleryEntry({ profileId: profile.id, caption, mediaFile });
       showToast("Aggiunto alla Hall of Fame 💀");
-    } catch {
-      showToast("Non sono riuscito a caricare questa foto, riprova con un'altra.");
+    } catch (e) {
+      const msg =
+        e instanceof Error && e.message === "VIDEO_TOO_LARGE"
+          ? "Il video è troppo grande (max 45 MB circa), prova ad accorciarlo."
+          : "Non sono riuscito a caricare questo file, riprova con un altro.";
+      showToast(msg);
     } finally {
       setBusy(false);
     }
@@ -208,7 +212,7 @@ export function App() {
 
   const handleDeleteGallery = async (item: GalleryItem) => {
     try {
-      await deleteGalleryEntry(item.id, item.photoURL);
+      await deleteGalleryEntry(item.id, item.mediaURL);
     } catch {
       showToast("Errore durante l'eliminazione");
     }

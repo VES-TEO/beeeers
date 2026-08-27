@@ -7,15 +7,27 @@ service firebase.storage {
       return request.auth != null;
     }
 
-    // profiles/{uid}/..., entries/{uid}/..., gallery/{uid}/... — every photo
+    function isOwnImage() {
+      return request.resource.size < 8 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // Only the Hall of Fame ("gallery") accepts video uploads — beer proof
+    // and profile photos stay images-only.
+    function isOwnGalleryVideo(folder) {
+      return folder == 'gallery'
+        && request.resource.size < 45 * 1024 * 1024
+        && request.resource.contentType.matches('video/.*');
+    }
+
+    // profiles/{uid}/..., entries/{uid}/..., gallery/{uid}/... — every file
     // lives under the uploader's own uid, so only they can write into it;
     // any signed-in member of the group can view it.
     match /{folder}/{uid}/{fileName} {
       allow read: if signedIn();
       allow write: if signedIn()
         && request.auth.uid == uid
-        && request.resource.size < 8 * 1024 * 1024
-        && request.resource.contentType.matches('image/.*');
+        && (isOwnImage() || isOwnGalleryVideo(folder));
     }
   }
 }

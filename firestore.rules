@@ -47,12 +47,13 @@ service cloud.firestore {
       allow delete: if signedIn() && resource.data.profileId == request.auth.uid;
     }
 
-    // gallery/{itemId} — Hall of Fame photos.
+    // gallery/{itemId} — Hall of Fame photos and short videos.
     match /gallery/{itemId} {
       allow read: if signedIn();
       allow create: if signedIn()
         && request.resource.data.profileId == request.auth.uid
-        && request.resource.data.photoURL is string;
+        && request.resource.data.mediaURL is string
+        && request.resource.data.mediaType in ['image', 'video'];
       allow update: if false;
       allow delete: if signedIn() && resource.data.profileId == request.auth.uid;
     }

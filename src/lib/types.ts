@@ -24,7 +24,8 @@ export interface GalleryItem {
   id: string;
   profileId: string;
   caption: string;
-  photoURL: string;
+  mediaURL: string;
+  mediaType: "image" | "video";
   createdAt: Timestamp;
 }
 
