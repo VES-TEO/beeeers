@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { X } from "lucide-react";
 import { Avatar } from "./Avatar";
 import type { Profile } from "@/lib/types";
@@ -11,13 +11,26 @@ export function VolcanoPopup({ profile, onClose }: { profile: Profile | null | u
     return () => clearTimeout(t);
   }, [onClose]);
 
-  const embers = [
-    { left: "38%", delay: "0s", drift: "-14px", size: 5 },
-    { left: "50%", delay: "0.3s", drift: "6px", size: 4 },
-    { left: "58%", delay: "0.6s", drift: "-6px", size: 6 },
-    { left: "45%", delay: "0.9s", drift: "16px", size: 4 },
-    { left: "62%", delay: "1.2s", drift: "-18px", size: 5 },
-  ];
+  // Lapilli fly out of the crater on a real up-then-down arc (translate peaks
+  // mid-animation, then keeps falling past the start point) with a spin, so
+  // the eruption reads as chunks of molten rock rather than plain rising dots.
+  const lapilli = useMemo(
+    () =>
+      [
+        { arcX: -46, arcHeight: 92, spin: 260, size: 9, delay: "0s", duration: "2.1s" },
+        { arcX: -22, arcHeight: 122, spin: -180, size: 6, delay: "0.15s", duration: "1.9s" },
+        { arcX: 6, arcHeight: 140, spin: 320, size: 8, delay: "0.3s", duration: "2.3s" },
+        { arcX: 30, arcHeight: 115, spin: -260, size: 7, delay: "0.45s", duration: "2s" },
+        { arcX: 52, arcHeight: 88, spin: 200, size: 9, delay: "0.6s", duration: "2.2s" },
+        { arcX: -34, arcHeight: 70, spin: -220, size: 5, delay: "0.8s", duration: "1.8s" },
+        { arcX: -8, arcHeight: 60, spin: 180, size: 6, delay: "0.95s", duration: "1.7s" },
+        { arcX: 18, arcHeight: 75, spin: -300, size: 5, delay: "1.1s", duration: "1.9s" },
+        { arcX: 42, arcHeight: 55, spin: 240, size: 6, delay: "1.3s", duration: "1.8s" },
+        { arcX: -14, arcHeight: 100, spin: 150, size: 7, delay: "1.5s", duration: "2.1s" },
+      ] as const,
+    []
+  );
+
   const smoke = [
     { left: "42%", delay: "0s" },
     { left: "52%", delay: "0.8s" },
@@ -41,7 +54,7 @@ export function VolcanoPopup({ profile, onClose }: { profile: Profile | null | u
           <X size={15} />
         </button>
 
-        <div className="relative h-[180px] flex items-end justify-center">
+        <div className="relative h-[180px] flex items-end justify-center overflow-hidden">
           {smoke.map((s, i) => (
             <div
               key={i}
@@ -60,7 +73,29 @@ export function VolcanoPopup({ profile, onClose }: { profile: Profile | null | u
               }}
             />
           ))}
-          <svg viewBox="0 0 200 150" width="100%" height="180" style={{ position: "relative", zIndex: 2 }}>
+
+          {/* shockwave ring pulsing out of the crater */}
+          <div
+            style={{
+              position: "absolute",
+              bottom: 58,
+              left: "50%",
+              width: 24,
+              height: 24,
+              borderRadius: "50%",
+              border: "2px solid var(--amber-deep)",
+              transform: "translate(-50%, 50%)",
+              animation: "shockwave 1.6s ease-out infinite",
+              zIndex: 1,
+            }}
+          />
+
+          <svg
+            viewBox="0 0 200 150"
+            width="100%"
+            height="180"
+            style={{ position: "relative", zIndex: 2, animation: "mountainShake 0.5s ease-in-out 1" }}
+          >
             <defs>
               <linearGradient id="mountainGrad" x1="0%" y1="0%" x2="0%" y2="100%">
                 <stop offset="0%" stopColor="#4A3524" />
@@ -76,24 +111,29 @@ export function VolcanoPopup({ profile, onClose }: { profile: Profile | null | u
             <path d="M 70,90 L 95,45 L 100,60 L 115,42 L 130,90 Z" fill="rgba(255,127,48,0.25)" />
             <ellipse cx="100" cy="26" rx="20" ry="9" fill="url(#craterGrad)" style={{ animation: "craterGlow 1.4s ease-in-out infinite" }} />
           </svg>
-          {embers.map((em, i) => (
+
+          {lapilli.map((l, i) => (
             <div
               key={i}
               style={{
                 position: "absolute",
                 bottom: 62,
-                left: em.left,
-                width: em.size,
-                height: em.size,
-                borderRadius: "50%",
-                background: "radial-gradient(circle, #FFE8A3 0%, var(--amber-deep) 60%, var(--coral) 100%)",
-                animation: "emberRise 2.4s ease-out infinite",
-                animationDelay: em.delay,
+                left: "50%",
+                width: l.size,
+                height: l.size,
+                borderRadius: "45% 55% 60% 40%",
+                background: "radial-gradient(circle at 35% 30%, #FFF6D6 0%, #FFE8A3 25%, var(--amber-deep) 65%, var(--coral) 100%)",
+                boxShadow: "0 0 6px 1px rgba(255,166,48,0.6)",
+                animation: `lavaArc ${l.duration} ease-out infinite`,
+                animationDelay: l.delay,
                 zIndex: 1,
-                "--drift": em.drift,
+                "--arcX": `${l.arcX}px`,
+                "--arcHeight": `${l.arcHeight}px`,
+                "--spin": `${l.spin}deg`,
               } as React.CSSProperties}
             />
           ))}
+
           <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 z-[3]" style={{ animation: "bounce 1.8s ease-in-out infinite" }}>
             <Avatar profile={profile} size={64} />
           </div>

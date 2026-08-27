@@ -52,7 +52,7 @@ export function App() {
       return;
     }
     const seen = seenWarmIdsRef.current;
-    const unseen = warmEntries.filter((e) => !seen.has(e.id) && e.profileId !== profile.id);
+    const unseen = warmEntries.filter((e) => !seen.has(e.id));
     if (unseen.length > 0) {
       const newest = unseen.sort(
         (a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0)
