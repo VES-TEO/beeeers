@@ -7,10 +7,10 @@ export const dynamic = "force-dynamic";
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/AuthProvider";
 import { CompleteProfile } from "@/components/CompleteProfile";
 import { App } from "@/components/App";
+import { AppLoader } from "@/components/AppLoader";
 
 export default function HomePage() {
   const { user, profile, loading } = useAuth();
@@ -21,11 +21,7 @@ export default function HomePage() {
   }, [loading, user, router]);
 
   if (loading || !user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-bg">
-        <Loader2 size={26} color="var(--amber)" className="spin" />
-      </div>
-    );
+    return <AppLoader />;
   }
 
   if (!profile) return <CompleteProfile />;

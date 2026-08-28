@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/AuthProvider";
 import { useEntries, useGallery, useProfiles, useReactions } from "@/hooks/useFirestoreData";
 import { useNotifications } from "@/hooks/useNotifications";
@@ -14,6 +13,7 @@ import type { Entry, GalleryItem } from "@/lib/types";
 import { TopHeader } from "./TopHeader";
 import { BottomNav } from "./BottomNav";
 import { BeerGlassIcon } from "./BeerGlassIcon";
+import { AppLoader } from "./AppLoader";
 import { Classifica, type LeaderboardRow } from "./Classifica";
 import { Feed } from "./Feed";
 import { HallOfFame } from "./HallOfFame";
@@ -160,11 +160,7 @@ export function App() {
   }, [profiles, yearEntries]);
 
   if (loading || entriesLoading || !profile || !user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-bg">
-        <Loader2 size={26} color="var(--amber)" className="spin" />
-      </div>
-    );
+    return <AppLoader />;
   }
 
   const handleLogBeer = async ({ ml, photoFile, warm }: { ml: number; photoFile: File; warm: boolean }) => {
@@ -300,7 +296,7 @@ export function App() {
       <button
         onClick={() => setShowLog(true)}
         aria-label="Registra una birra"
-        className="fixed bottom-[74px] left-1/2 -translate-x-1/2 w-14 h-[62px] rounded-[8px_8px_20px_20px] bg-white/[0.06] border-2 border-white/30 flex items-center justify-center overflow-hidden z-30 p-0"
+        className="fixed bottom-[74px] left-1/2 -translate-x-1/2 w-14 h-[62px] rounded-[8px_8px_20px_20px] bg-white/[0.06] border-2 border-white/30 flex items-center justify-center overflow-hidden z-30 p-0 tap-shrink"
         style={{ animation: "fabPulse 2.6s ease-in-out infinite" }}
       >
         <BeerGlassIcon fillPct={glassFillPct} />

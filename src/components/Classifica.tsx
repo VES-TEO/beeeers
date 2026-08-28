@@ -47,7 +47,7 @@ export function Classifica({
           <button
             key={y}
             onClick={() => setYear(y)}
-            className={`border rounded-full px-3.5 py-1.5 text-[12.5px] font-semibold font-sans ${
+            className={`border rounded-full px-3.5 py-1.5 text-[12.5px] font-semibold font-sans tap-shrink ${
               y === year ? "bg-amber text-[#12100B] border-amber" : "bg-bg-elev text-text-dim border-border"
             }`}
           >
@@ -73,7 +73,7 @@ export function Classifica({
             return (
               <div
                 key={row.profile.id}
-                className="flex items-center gap-3 border rounded-2xl px-3.5 py-[11px]"
+                className="flex items-center gap-3 border rounded-2xl px-3.5 py-[11px] card-shadow tap-shrink"
                 style={{
                   background:
                     i === 0 && row.points > 0

@@ -67,7 +67,7 @@ export function LogBeerModal({
                 setUseCustom(false);
                 setMl(s.ml);
               }}
-              className={`border rounded-[10px] px-1 py-2.5 text-center font-sans text-[12.5px] ${
+              className={`border rounded-[10px] px-1 py-2.5 text-center font-sans text-[12.5px] tap-shrink ${
                 !useCustom && ml === s.ml ? "bg-amber border-amber text-[#12100B]" : "bg-bg-elev-2 border-border text-text-dim"
               }`}
             >
@@ -77,7 +77,7 @@ export function LogBeerModal({
           ))}
           <button
             onClick={() => setUseCustom(true)}
-            className={`border rounded-[10px] px-1 py-2.5 text-center font-sans text-[12.5px] ${
+            className={`border rounded-[10px] px-1 py-2.5 text-center font-sans text-[12.5px] tap-shrink ${
               useCustom ? "bg-amber border-amber text-[#12100B]" : "bg-bg-elev-2 border-border text-text-dim"
             }`}
           >
@@ -125,7 +125,7 @@ export function LogBeerModal({
         <button
           disabled={!canSave}
           onClick={() => photoFile && onSave({ ml: finalMl, photoFile, warm })}
-          className="w-full mt-5 rounded-xl py-[13px] font-baloo text-[15.5px] font-bold text-[#12100B] disabled:opacity-50"
+          className="w-full mt-5 rounded-xl py-[13px] font-baloo text-[15.5px] font-bold text-[#12100B] disabled:opacity-50 tap-shrink"
           style={{ background: "linear-gradient(135deg, var(--amber) 0%, var(--amber-deep) 100%)" }}
         >
           {busy ? (

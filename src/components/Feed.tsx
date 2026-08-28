@@ -36,7 +36,7 @@ function ReactionBar({
           <button
             key={emoji}
             onClick={() => (active ? onRemoveReaction(entryId) : onSetReaction(entryId, emoji))}
-            className="flex items-center gap-1 rounded-full px-2 py-1 text-xs font-sans border"
+            className="flex items-center gap-1 rounded-full px-2 py-1 text-xs font-sans border tap-shrink"
             style={{
               background: active ? "rgba(255,201,60,0.16)" : "var(--bg-elev-2)",
               borderColor: active ? "var(--amber-deep)" : "var(--border)",
@@ -93,7 +93,7 @@ export function Feed({
             const p = profiles.find((pr) => pr.id === e.profileId);
             const open = !!openPhotoIds[e.id];
             return (
-              <div key={e.id} className="bg-bg-elev border border-border rounded-2xl p-3">
+              <div key={e.id} className="bg-bg-elev border border-border rounded-2xl p-3 card-shadow">
                 <div className="flex items-center gap-2.5">
                   <Avatar profile={p} size={36} />
                   <div className="flex-1 min-w-0">

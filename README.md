@@ -55,15 +55,13 @@ storage.rules              # foto isolate per uid del proprietario
 - `users/{uid}` — `{ name, photoURL, email, phoneNumber, createdAt }`
   - `users/{uid}/fcmTokens/{token}` — token dei dispositivi per le push
 - `entries/{id}` — `{ profileId, ml, points, doubled, warm, photoURL, createdAt }`
-- `gallery/{id}` — `{ profileId, caption, photoURL, createdAt }`
+  - `entries/{id}/reactions/{uid}` — una reazione emoji per persona
+- `gallery/{id}` — `{ profileId, caption, mediaURL, mediaType: "image"|"video", createdAt }`
 
 Punti = ml bevuti, raddoppiati se in streak di 2+ giorni consecutivi,
 raddoppiati di nuovo se la birra era "calda" (quindi x4 se entrambe).
 
 ## Note
 
-- Le icone PWA (`public/icon-192.png` ecc.) non sono incluse: aggiungile se
-  vuoi un'icona personalizzata per l'installazione su home screen — nel
-  frattempo il browser usa un'icona di default.
 - L'autenticazione via telefono richiede il piano Blaze (comunque nella
   quota gratuita per un uso di gruppo) — vedi FIREBASE_SETUP.md.

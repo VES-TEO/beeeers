@@ -7,23 +7,19 @@ import { AddMemoryModal } from "./AddMemoryModal";
 import { fmtDate } from "@/lib/utils";
 import type { GalleryItem, Profile } from "@/lib/types";
 
-/** Renders a gallery item's photo or video, filling its container. */
-function GalleryMedia({ item, alt, controls }: { item: GalleryItem; alt: string; controls: boolean }) {
+/** Renders a gallery item's photo or video. `fill` covers a fixed-size
+ * container (spotlight); otherwise it renders at its own natural aspect
+ * ratio, which is what makes the memory grid below a real masonry. */
+function GalleryMedia({ item, alt, controls, fill }: { item: GalleryItem; alt: string; controls: boolean; fill: boolean }) {
+  const className = fill ? "w-full h-full object-cover" : "w-full h-auto block";
   if (item.mediaType === "video") {
     return (
       // eslint-disable-next-line jsx-a11y/media-has-caption
-      <video
-        src={item.mediaURL}
-        className="w-full h-full object-cover"
-        muted
-        playsInline
-        controls={controls}
-        preload="metadata"
-      />
+      <video src={item.mediaURL} className={className} muted playsInline controls={controls} preload="metadata" />
     );
   }
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src={item.mediaURL} alt={alt} className="w-full h-full object-cover" />;
+  return <img src={item.mediaURL} alt={alt} className={className} />;
 }
 
 export function HallOfFame({
@@ -76,7 +72,7 @@ export function HallOfFame({
         </div>
         <button
           onClick={() => setShowAdd(true)}
-          className="flex items-center gap-1 bg-bg-elev-2 border border-border text-amber rounded-lg px-3 py-2 text-xs font-bold font-sans whitespace-nowrap"
+          className="flex items-center gap-1 bg-bg-elev-2 border border-border text-amber rounded-lg px-3 py-2 text-xs font-bold font-sans whitespace-nowrap tap-shrink"
         >
           <Plus size={14} /> Ricordo
         </button>
@@ -93,8 +89,8 @@ export function HallOfFame({
         </div>
       ) : (
         <>
-          <div className="relative w-full h-[320px] rounded-[18px] overflow-hidden border border-border bg-bg-elev">
-            <GalleryMedia item={items[spotIndex]} alt={spotProfile(items[spotIndex])?.name || "?"} controls />
+          <div className="relative w-full h-[320px] rounded-[18px] overflow-hidden border border-border bg-bg-elev card-shadow">
+            <GalleryMedia item={items[spotIndex]} alt={spotProfile(items[spotIndex])?.name || "?"} controls fill />
             <div
               className="absolute bottom-0 left-0 right-0 px-3.5 pb-3.5 pt-10 pointer-events-none"
               style={{ background: "linear-gradient(0deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.1) 70%, rgba(0,0,0,0) 100%)" }}
@@ -140,10 +136,10 @@ export function HallOfFame({
           )}
 
           <div className="text-xs font-bold text-text-dim uppercase tracking-wider mb-2">Tutti i ricordi</div>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="columns-3 gap-2">
             {items.map((it) => (
-              <div key={it.id} className="relative aspect-square rounded-[10px] overflow-hidden border border-border">
-                <GalleryMedia item={it} alt={spotProfile(it)?.name || "?"} controls={false} />
+              <div key={it.id} className="relative rounded-[10px] overflow-hidden border border-border card-shadow mb-2 break-inside-avoid">
+                <GalleryMedia item={it} alt={spotProfile(it)?.name || "?"} controls={false} fill={false} />
                 {it.mediaType === "video" && (
                   <div className="absolute top-1 left-1 bg-black/55 rounded-full w-5 h-5 flex items-center justify-center pointer-events-none">
                     <Play size={10} color="#fff" fill="#fff" />

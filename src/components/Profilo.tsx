@@ -53,19 +53,19 @@ export function Profilo({
       </div>
 
       <div className="grid grid-cols-2 gap-2 mb-[18px]">
-        <div className="bg-bg-elev border border-border rounded-xl px-1.5 py-3 text-center">
+        <div className="bg-bg-elev border border-border rounded-xl px-1.5 py-3 text-center card-shadow">
           <div className="font-baloo font-extrabold text-[19px] text-text">{fmtInt(yearPoints)}</div>
           <div className="text-[10.5px] text-text-dim mt-[3px] font-sans">Punti {currentYear()}</div>
         </div>
-        <div className="bg-bg-elev border border-border rounded-xl px-1.5 py-3 text-center">
+        <div className="bg-bg-elev border border-border rounded-xl px-1.5 py-3 text-center card-shadow">
           <div className="font-baloo font-extrabold text-[19px] text-text">{totalBeers}</div>
           <div className="text-[10.5px] text-text-dim mt-[3px] font-sans">Birre totali</div>
         </div>
-        <div className="bg-bg-elev border border-border rounded-xl px-1.5 py-3 text-center">
+        <div className="bg-bg-elev border border-border rounded-xl px-1.5 py-3 text-center card-shadow">
           <div className="font-baloo font-extrabold text-[19px] text-text">{fmtInt(totalMl)}</div>
           <div className="text-[10.5px] text-text-dim mt-[3px] font-sans">ml totali bevuti</div>
         </div>
-        <div className="bg-bg-elev border border-border rounded-xl px-1.5 py-3 text-center">
+        <div className="bg-bg-elev border border-border rounded-xl px-1.5 py-3 text-center card-shadow">
           <div className="font-baloo font-extrabold text-[19px] text-text">{fmtInt(totalPoints)}</div>
           <div className="text-[10.5px] text-text-dim mt-[3px] font-sans">Punti totali</div>
         </div>
@@ -78,7 +78,7 @@ export function Profilo({
           return (
             <div
               key={b.label}
-              className="flex items-center gap-2.5 rounded-xl px-2.5 py-2.5 border"
+              className="flex items-center gap-2.5 rounded-xl px-2.5 py-2.5 border card-shadow"
               style={{
                 background: b.achieved ? "rgba(255,201,60,0.1)" : "var(--bg-elev)",
                 borderColor: b.achieved ? "var(--amber-deep)" : "var(--border)",
@@ -115,7 +115,7 @@ export function Profilo({
 
       <button
         onClick={onLogout}
-        className="w-full flex items-center justify-center gap-[7px] mt-5 bg-transparent border border-border rounded-[10px] py-[11px] text-coral font-sans text-[13px] font-semibold"
+        className="w-full flex items-center justify-center gap-[7px] mt-5 bg-transparent border border-border rounded-[10px] py-[11px] text-coral font-sans text-[13px] font-semibold tap-shrink"
       >
         <LogOut size={14} /> Esci dal profilo
       </button>
