@@ -44,23 +44,21 @@ body {
   padding-bottom: 82px;
 }
 
-/* Faint, fixed bubble texture behind the main content — barely-there
-   ambiance rather than a decoration you consciously notice. */
+/* Faint bubble texture behind the main content — barely-there ambiance
+   rather than a decoration you consciously notice. Negative z-index keeps
+   it behind every normal-flow child without touching any child's own
+   positioning (the FAB and bottom nav rely on staying `fixed`). */
 .app-shell::before {
   content: "";
-  position: fixed;
+  position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 0;
+  z-index: -1;
   opacity: 0.5;
   background-image: radial-gradient(rgba(255, 201, 60, 0.07) 1.5px, transparent 1.5px),
     radial-gradient(rgba(255, 201, 60, 0.05) 1px, transparent 1px);
   background-size: 64px 64px, 38px 38px;
   background-position: 0 0, 20px 30px;
-}
-.app-shell > * {
-  position: relative;
-  z-index: 1;
 }
 
 /* Subtle elevation for content cards, layered under the many bg-bg-elev
